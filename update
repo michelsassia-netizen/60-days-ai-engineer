@@ -1,0 +1,1447 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>60-Day AI Learning Plan Dashboard (Dark Mode + GitHub Sync)</title>
+  <meta name="color-scheme" content="dark" />
+  <style>
+    :root{
+      --bg0:#070A12;
+      --bg1:#0B1020;
+      --card:#0E1630;
+      --muted:#93A4C7;
+      --text:#EAF0FF;
+      --accent:#6EE7FF;
+      --accent2:#A78BFA;
+      --ok:#34D399;
+      --warn:#FBBF24;
+      --danger:#FB7185;
+      --border:rgba(255,255,255,.08);
+      --shadow: 0 18px 60px rgba(0,0,0,.40);
+      --shadow2: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 18px;
+      --radius2: 14px;
+      --t: 180ms cubic-bezier(.2,.8,.2,1);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      background:
+        radial-gradient(1100px 600px at 12% 0%, rgba(110,231,255,.10), transparent 60%),
+        radial-gradient(900px 520px at 88% 10%, rgba(167,139,250,.10), transparent 60%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      color:var(--text);
+      letter-spacing:.2px;
+    }
+
+    .app{display:grid; grid-template-columns:360px 1fr; min-height:100vh;}
+    @media (max-width:980px){ .app{grid-template-columns:1fr} .sidebar{position:relative; height:auto} }
+
+    .sidebar{
+      position:sticky; top:0; align-self:start; height:100vh;
+      padding:22px 18px;
+      border-right:1px solid var(--border);
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+      backdrop-filter: blur(10px);
+    }
+
+    .brand{
+      display:flex; gap:12px; align-items:center;
+      padding:14px;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.03);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow2);
+      transition: transform var(--t), border-color var(--t), background var(--t);
+    }
+    .brand:hover{transform: translateY(-2px); border-color: rgba(110,231,255,.22); background: rgba(110,231,255,.05);}
+    .logo{
+      width:44px;height:44px;border-radius:14px;
+      background:
+        radial-gradient(14px 14px at 30% 30%, rgba(110,231,255,.95), transparent 60%),
+        radial-gradient(18px 18px at 70% 70%, rgba(167,139,250,.95), transparent 62%),
+        linear-gradient(135deg, rgba(110,231,255,.18), rgba(167,139,250,.18));
+      border:1px solid rgba(255,255,255,.10);
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+    .brand h1{font-size:14px;margin:0;line-height:1.1;letter-spacing:.4px;}
+    .brand p{margin:3px 0 0;color:var(--muted);font-size:12px;}
+
+    .panel{
+      margin-top:14px;
+      padding:14px;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.03);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow2);
+    }
+
+    .panel h2{
+      margin:0 0 10px;
+      font-size:12px;
+      color:var(--muted);
+      font-weight:600;
+      letter-spacing:.6px;
+      text-transform:uppercase;
+    }
+
+    .row{display:flex; align-items:center; justify-content:space-between; gap:12px; margin:10px 0 0;}
+    .stat{display:flex; flex-direction:column; gap:3px;}
+    .stat .k{font-size:12px;color:var(--muted)}
+    .stat .v{font-size:18px;font-weight:700; letter-spacing:.3px}
+
+    .progress{
+      width:100%;
+      height:10px;
+      border-radius:999px;
+      background: rgba(255,255,255,.07);
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.06);
+    }
+    .bar{
+      height:100%;
+      width:0%;
+      border-radius:999px;
+      background: linear-gradient(90deg, rgba(110,231,255,.95), rgba(167,139,250,.95));
+      box-shadow: 0 10px 30px rgba(110,231,255,.18);
+      transition: width 260ms cubic-bezier(.2,.9,.2,1);
+    }
+
+    .phaseList{display:flex; flex-direction:column; gap:10px; margin-top:12px;}
+    .phaseItem{
+      padding:10px;
+      border-radius: var(--radius2);
+      border:1px solid var(--border);
+      background: rgba(0,0,0,.12);
+      transition: transform var(--t), border-color var(--t), background var(--t);
+    }
+    .phaseItem:hover{transform: translateY(-1px); border-color: rgba(167,139,250,.22); background: rgba(167,139,250,.06);}
+    .phaseTop{display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-bottom:8px;}
+    .phaseName{font-weight:700; font-size:13px;}
+    .phaseDays{color:var(--muted); font-size:12px; font-family:var(--mono);}
+    .phaseMeta{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:8px; color:var(--muted); font-size:12px;}
+
+    .controls{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;}
+    .btn{
+      appearance:none;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.04);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius: 14px;
+      font-size:12px;
+      font-weight:650;
+      letter-spacing:.3px;
+      cursor:pointer;
+      transition: transform var(--t), background var(--t), border-color var(--t), box-shadow var(--t);
+      box-shadow: 0 10px 20px rgba(0,0,0,.25);
+      user-select:none;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
+    .btn:hover{transform: translateY(-1px); border-color: rgba(110,231,255,.22); background: rgba(110,231,255,.07); box-shadow: 0 16px 30px rgba(0,0,0,.30);}
+    .btn:active{transform: translateY(0px) scale(.99)}
+    .btn.danger:hover{border-color: rgba(251,113,133,.30); background: rgba(251,113,133,.08);}
+    .btn.good:hover{border-color: rgba(52,211,153,.30); background: rgba(52,211,153,.08);}
+
+    .search{width:100%; margin-top:12px;}
+    .search input{
+      width:100%;
+      padding:12px;
+      border-radius: 14px;
+      border:1px solid var(--border);
+      background: rgba(0,0,0,.15);
+      color:var(--text);
+      outline:none;
+      transition: border-color var(--t), background var(--t);
+    }
+    .search input:focus{border-color: rgba(110,231,255,.32); background: rgba(110,231,255,.05);}
+
+    .hint{margin-top:10px;color:var(--muted);font-size:12px;line-height:1.4;}
+    .kbd{
+      font-family: var(--mono);
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
+      border-radius: 10px;
+      padding: 2px 8px;
+      color: var(--muted);
+    }
+
+    .main{padding:22px 22px 36px;}
+    .topbar{display:flex; align-items:flex-end; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-bottom:16px;}
+    .headline h2{margin:0; font-size:22px; letter-spacing:.4px;}
+    .headline p{margin:6px 0 0; color:var(--muted); font-size:13px; line-height:1.45; max-width: 860px;}
+
+    .grid{display:grid; grid-template-columns: repeat(12, 1fr); gap:14px;}
+
+    .phaseHeader{
+      grid-column: 1 / -1;
+      margin-top:18px;
+      padding:16px;
+      border-radius: var(--radius);
+      border:1px solid var(--border);
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      box-shadow: var(--shadow2);
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      transition: transform var(--t), border-color var(--t), background var(--t);
+    }
+    .phaseHeader:hover{
+      transform: translateY(-1px);
+      border-color: rgba(167,139,250,.22);
+      background: linear-gradient(180deg, rgba(167,139,250,.06), rgba(255,255,255,.02));
+    }
+    .phaseHeader .left h3{margin:0; font-size:16px; letter-spacing:.4px;}
+    .phaseHeader .left .sub{margin-top:6px; color:var(--muted); font-size:12px; line-height:1.45;}
+    .phaseHeader .right{min-width: 240px; display:flex; flex-direction:column; gap:8px; align-items:flex-end;}
+    .phaseHeader .right .pct{font-family:var(--mono); color:var(--muted); font-size:12px;}
+
+    .dayCard{
+      grid-column: span 6;
+      border-radius: var(--radius);
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.03);
+      box-shadow: var(--shadow2);
+      padding:14px;
+      transition: transform var(--t), border-color var(--t), background var(--t);
+    }
+    .dayCard:hover{
+      transform: translateY(-2px);
+      border-color: rgba(110,231,255,.22);
+      background: rgba(110,231,255,.04);
+    }
+    @media (max-width:1100px){
+      .dayCard{grid-column: span 12;}
+      .phaseHeader .right{min-width: 200px}
+    }
+
+    .dayTop{display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin-bottom:10px;}
+    .dayTitle{display:flex; flex-direction:column; gap:3px;}
+    .dayTitle .d{font-size:12px; color:var(--muted); font-family:var(--mono);}
+    .dayTitle .t{font-size:14px; font-weight:800; letter-spacing:.3px; line-height:1.25;}
+    .dayMeta{text-align:right; display:flex; flex-direction:column; gap:6px; align-items:flex-end;}
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius: 999px;
+      border:1px solid var(--border);
+      background: rgba(0,0,0,.14);
+      color:var(--muted);
+      font-size:12px;
+      font-family:var(--mono);
+    }
+    .pill strong{color:var(--text); font-family:var(--sans); font-weight:800; font-size:12px}
+    .miniProgress{
+      width:140px;
+      height:8px;
+      border-radius:999px;
+      background: rgba(255,255,255,.07);
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.06);
+    }
+    .miniBar{
+      height:100%;
+      width:0%;
+      border-radius:999px;
+      background: linear-gradient(90deg, rgba(52,211,153,.95), rgba(110,231,255,.95));
+      transition: width 260ms cubic-bezier(.2,.9,.2,1);
+    }
+
+    .tasks{display:flex; flex-direction:column; gap:8px; margin-top:8px;}
+    .task{
+      display:flex; gap:10px; align-items:flex-start;
+      padding:10px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.07);
+      background: rgba(0,0,0,.10);
+      transition: transform var(--t), border-color var(--t), background var(--t), opacity var(--t);
+    }
+    .task:hover{transform: translateY(-1px); border-color: rgba(255,255,255,.12); background: rgba(255,255,255,.04);}
+    .task.milestone{border-color: rgba(251,191,36,.28); background: rgba(251,191,36,.06);}
+    .task.milestone:hover{border-color: rgba(251,191,36,.45); background: rgba(251,191,36,.09);}
+    input[type="checkbox"]{width:18px;height:18px;margin-top:2px; accent-color: var(--accent); cursor:pointer;}
+    .taskText{flex:1; display:flex; flex-direction:column; gap:4px; min-width:0;}
+    .taskText .label{font-size:13px; line-height:1.35; word-break: break-word;}
+    .taskText .note{font-size:12px; color:var(--muted); font-family:var(--mono); line-height:1.3;}
+    .task.done{opacity:.72; border-color: rgba(52,211,153,.22); background: rgba(52,211,153,.06);}
+    .task.done .label{
+      text-decoration: line-through;
+      text-decoration-thickness: 2px;
+      text-decoration-color: rgba(52,211,153,.55);
+      color: rgba(234,240,255,.85);
+    }
+
+    .footerNote{
+      margin-top:18px;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.5;
+      padding:14px;
+      border-radius: var(--radius);
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.03);
+    }
+
+    .toast{
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      padding: 12px 12px;
+      border-radius: 14px;
+      border:1px solid var(--border);
+      background: rgba(10,16,32,.82);
+      backdrop-filter: blur(10px);
+      color: var(--text);
+      font-size: 12px;
+      box-shadow: var(--shadow);
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity var(--t), transform var(--t);
+      pointer-events:none;
+      max-width: 360px;
+      line-height:1.35;
+      z-index: 99;
+    }
+    .toast.show{opacity:1; transform: translateY(0px);}
+
+    /* Modal */
+    .modalBack{
+      position:fixed; inset:0;
+      background: rgba(0,0,0,.55);
+      backdrop-filter: blur(8px);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding: 16px;
+      z-index: 100;
+    }
+    .modalBack.show{display:flex;}
+    .modal{
+      width: min(560px, 100%);
+      border-radius: 20px;
+      border:1px solid rgba(255,255,255,.10);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .modalTop{
+      padding: 16px 16px 10px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+    .modalTop h3{margin:0; font-size:16px; letter-spacing:.3px;}
+    .modalTop p{margin:6px 0 0; color: var(--muted); font-size:12px; line-height:1.45;}
+    .modalBody{padding: 14px 16px 16px;}
+    .field{display:flex; flex-direction:column; gap:6px; margin-top:10px;}
+    .field label{font-size:12px; color: var(--muted);}
+    .field input{
+      padding: 12px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
+      color: var(--text);
+      outline:none;
+      transition: border-color var(--t), background var(--t);
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+    .field input:focus{border-color: rgba(110,231,255,.35); background: rgba(110,231,255,.06);}
+    .modalActions{
+      padding: 12px 16px 16px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:space-between;
+      border-top:1px solid rgba(255,255,255,.08);
+    }
+    .statusLine{
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+      flex: 1;
+      min-width: 220px;
+    }
+    .smallLinkBtn{
+      background: transparent;
+      border: none;
+      color: rgba(110,231,255,.95);
+      cursor:pointer;
+      font-size: 12px;
+      padding: 6px 0;
+      text-decoration: underline;
+    }
+
+    /* GitHub status */
+    .ghStatus{
+      margin-top:10px;
+      padding: 10px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(0,0,0,.12);
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+    .ghRow{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:baseline;
+      flex-wrap:wrap;
+    }
+    .tag{
+      font-family: var(--mono);
+      padding: 3px 8px;
+      border-radius: 999px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .tag.ok{border-color: rgba(52,211,153,.25); color: rgba(52,211,153,.95); background: rgba(52,211,153,.08);}
+    .tag.bad{border-color: rgba(251,113,133,.25); color: rgba(251,113,133,.95); background: rgba(251,113,133,.08);}
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand" title="Progress saves automatically to localStorage and can sync to GitHub.">
+      <div class="logo" aria-hidden="true"></div>
+      <div>
+        <h1>60-Day AI Learning Plan</h1>
+        <p>Dark dashboard • auto-save • GitHub sync</p>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Overall Progress</h2>
+      <div class="row">
+        <div class="stat">
+          <div class="k">Completed</div>
+          <div class="v"><span id="overallDone">0</span>/<span id="overallTotal">0</span></div>
+        </div>
+        <div class="stat" style="text-align:right">
+          <div class="k">Percent</div>
+          <div class="v"><span id="overallPct">0</span>%</div>
+        </div>
+      </div>
+      <div style="margin-top:10px">
+        <div class="progress" aria-label="Overall progress">
+          <div class="bar" id="overallBar"></div>
+        </div>
+      </div>
+
+      <div class="phaseList" id="phaseList"></div>
+
+      <div class="ghStatus" id="ghStatus">
+        <div class="ghRow">
+          <div><strong>GitHub Sync</strong></div>
+          <div class="tag" id="ghTag">Not connected</div>
+        </div>
+        <div class="ghRow">
+          <div>Repo</div>
+          <div class="tag" id="ghRepoTag">—</div>
+        </div>
+        <div class="ghRow">
+          <div>File</div>
+          <div class="tag" id="ghFileTag">progress.json</div>
+        </div>
+      </div>
+
+      <div class="search">
+        <input id="searchInput" type="text" placeholder="Search days & tasks (e.g., 'Twilio', 'RAG', 'demo')…" />
+      </div>
+
+      <div class="controls">
+        <button class="btn good" id="syncNow">Sync to GitHub now</button>
+        <button class="btn" id="openSetup">GitHub setup</button>
+        <button class="btn" id="markVisibleDone">Mark visible tasks done</button>
+        <button class="btn danger" id="resetAll">Reset all progress</button>
+      </div>
+
+      <div class="hint">
+        Tips: Use <span class="kbd">Ctrl</span> + <span class="kbd">F</span> or the search box.
+        Progress saves locally instantly; GitHub sync writes to <span class="kbd">progress.json</span>.
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="headline">
+        <h2>Daily plan (Days 1–60)</h2>
+        <p>
+          Each day is expanded by default. Check tasks as you go.
+          It saves to <span class="kbd">localStorage</span> and (optional) syncs to GitHub so your progress is backed up.
+        </p>
+      </div>
+    </div>
+
+    <div class="grid" id="grid"></div>
+
+    <div class="footerNote">
+      <strong>Daily rhythm (3 hours):</strong>
+      Hour 1 Learn • Hour 2 Build • Hour 3 Debug. Keep shipping tiny wins.
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- GitHub Setup Modal -->
+<div class="modalBack" id="modalBack" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="setupTitle">
+    <div class="modalTop">
+      <div>
+        <h3 id="setupTitle">Connect GitHub (token-based)</h3>
+        <p>
+          We’ll store your settings in <span class="kbd">localStorage</span>.
+          Your token is used only in your browser to sync <span class="kbd">progress.json</span> into your repo.
+        </p>
+      </div>
+      <button class="btn" id="closeSetup" title="Close">Close</button>
+    </div>
+    <div class="modalBody">
+      <div class="field">
+        <label for="ghUser">Username</label>
+        <input id="ghUser" placeholder="your-github-username" autocomplete="off" />
+      </div>
+      <div class="field">
+        <label for="ghRepo">Repo</label>
+        <input id="ghRepo" placeholder="60-days-ai-engineer" autocomplete="off" />
+      </div>
+      <div class="field">
+        <label for="ghToken">Token (classic PAT recommended)</label>
+        <input id="ghToken" placeholder="ghp_..." autocomplete="off" />
+      </div>
+
+      <div class="hint" style="margin-top:12px">
+        Token permissions: for classic PAT, <span class="kbd">repo</span> is enough for private repos;
+        for public-only, you may be able to use <span class="kbd">public_repo</span> (but your “repo” checkbox is fine).
+      </div>
+    </div>
+    <div class="modalActions">
+      <div class="statusLine" id="setupStatus">Fill your details then click “Connect & Test”.</div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end">
+        <button class="btn good" id="connectTest">Connect & Test</button>
+        <button class="btn" id="disconnect">Disconnect</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // =========================
+  // Plan data (Days 1–60)
+  // =========================
+  const phases = [
+    { id:"p1", name:"Phase 1 — Foundation", days:[1,15], goal:"Build Console Translator + Kaggle Certificate", description:"Python basics → APIs → Project #1: translator bot." },
+    { id:"p2", name:"Phase 2 — The Brain (RAG)", days:[16,30], goal:"Build 'NGO Policy Expert' (Chat with PDF)", description:"Documents → embeddings → retrieval pipeline → Project #2." },
+    { id:"p3", name:"Phase 3 — The Connection (WhatsApp & Voice)", days:[31,45], goal:"Build Voice Receptionist via WhatsApp", description:"Flask webhooks → Twilio WhatsApp → STT/TTS → Project #3." },
+    { id:"p4", name:"Phase 4 — Deployment & Sales", days:[46,60], goal:"Launch, Sell, Get Paid", description:"GitHub + hosting → quality → demo asset → outreach sprint." }
+  ];
+  const T = (label, note="", milestone=false) => ({ label, note, milestone });
+
+  const days = [
+    { day:1, phaseId:"p1", title:"Python setup + Kaggle start", tasks:[
+      T("Install Python 3.10+ (python.org/downloads)"),
+      T("Install VS Code (code.visualstudio.com)"),
+      T("Install Python extension in VS Code"),
+      T("Start Kaggle Python Course (kaggle.com/learn/python)"),
+      T("Complete Lessons 1–2 (Hello Python, Functions)"),
+      T("Write your first program: print('Hello Haiti!')"),
+    ]},
+    { day:2, phaseId:"p1", title:"Booleans + if/else (build a mini game)", tasks:[
+      T("Complete Kaggle Lessons 3–4 (Booleans, If/Else)"),
+      T("BUILD: Create a text adventure game (Left/Right → different endings)"),
+      T("Use input() to get user choices"),
+      T("Practice if/elif/else statements"),
+    ]},
+    { day:3, phaseId:"p1", title:"Loops + feedback", tasks:[
+      T("Complete Kaggle Lesson 5 (Loops)"),
+      T("Add loops to your text game (replay option)"),
+      T("Watch: 'Python for Beginners' by Programming with Mosh (YouTube)"),
+      T("Post your game code in r/learnpython for feedback"),
+    ]},
+    { day:4, phaseId:"p1", title:"Lists + functions", tasks:[
+      T("Complete Kaggle Lessons 6–7 (Lists, Loops)"),
+      T("Learn def + return"),
+      T("Create function: translate_creole('hello') → 'Bonjou'"),
+      T("Use a Python dictionary for fake translations"),
+    ]},
+    { day:5, phaseId:"p1", title:"Finish Kaggle + imports", tasks:[
+      T("Finish Kaggle Python Course (get certificate!)"),
+      T("Learn about import statements"),
+      T("Practice with random, datetime, math modules"),
+      T("MILESTONE: Kaggle Python Certificate earned","Milestone",true),
+    ]},
+    { day:6, phaseId:"p1", title:"Packages + HTTP basics", tasks:[
+      T("Install pip packages: pip install requests"),
+      T("Learn JSON basics (YouTube: 'JSON Crash Course')"),
+      T("Read about REST APIs (what they are, why they matter)"),
+    ]},
+    { day:7, phaseId:"p1", title:"Catch up + reinforce", tasks:[
+      T("Catch up on any incomplete tasks from Days 1–6"),
+      T("Re-run your game and refactor at least 1 part (cleaner functions)"),
+      T("Write 10 minutes: what confused you most + what clicked this week"),
+    ]},
+    { day:8, phaseId:"p1", title:"OpenAI setup", tasks:[
+      T("Sign up for OpenAI (platform.openai.com/signup)"),
+      T("Get small testing credit (if available) / prepare a minimal budget for API"),
+      T("Generate API key (platform.openai.com/api-keys)"),
+      T("Install: pip install openai"),
+      T("Read OpenAI quickstart docs"),
+    ]},
+    { day:9, phaseId:"p1", title:"Anthropic setup + env vars", tasks:[
+      T("Sign up for Anthropic (console.anthropic.com)"),
+      T("Get Claude API key (free tier if available)"),
+      T("Install: pip install anthropic"),
+      T("Write script: send 'Hello' to API, print response"),
+      T("Learn environment variables (.env files)"),
+    ]},
+    { day:10, phaseId:"p1", title:"Practice prompts + error handling", tasks:[
+      T("Practice API calls with different prompts"),
+      T("Learn error handling (try/except)"),
+      T("Test: 'Translate to Haitian Creole: Good morning'"),
+      T("Watch: 'Working with APIs in Python' tutorial"),
+    ]},
+    { day:11, phaseId:"p1", title:"Project #1 start: translator loop", tasks:[
+      T("Design bot flow: input() → API → print() output"),
+      T("Write system prompt: 'You are a Haitian Creole translator…'"),
+      T("Test a basic translation loop"),
+    ]},
+    { day:12, phaseId:"p1", title:"Detection + edge cases", tasks:[
+      T("Add language detection (English, French, Creole)"),
+      T("Handle edge cases (empty input, API errors)"),
+      T("Add 'type exit to quit' functionality"),
+    ]},
+    { day:13, phaseId:"p1", title:"Polish terminal UX", tasks:[
+      T("Polish UI (clear terminal, colored text)"),
+      T("Add better prompts + spacing for readability"),
+      T("Run 10 test messages in each language"),
+    ]},
+    { day:14, phaseId:"p1", title:"History + prompt engineering", tasks:[
+      T("Add conversation history (save last 10 messages)"),
+      T("Test with real Creole phrases (ask Haitian friends)"),
+      T("Learn prompt engineering techniques (constraints, examples, tone)"),
+    ]},
+    { day:15, phaseId:"p1", title:"Project #1 finish", tasks:[
+      T("Final testing and bug fixes"),
+      T("Write README.md explaining your project"),
+      T("Record a 30-second demo video"),
+      T("MILESTONE: Project #1 (Console Translator) working","Checkpoint",true),
+    ]},
+
+    { day:16, phaseId:"p2", title:"RAG basics + LangChain setup", tasks:[
+      T("Install: pip install langchain pypdf"),
+      T("Learn what RAG (Retrieval Augmented Generation) is"),
+      T("Watch: 'RAG Explained' by Sam Witteveen (YouTube)"),
+      T("Read LangChain docs: python.langchain.com/docs/get_started"),
+    ]},
+    { day:17, phaseId:"p2", title:"Extract text from PDF", tasks:[
+      T("Download a sample PDF (Haitian constitution, NGO policy, etc.)"),
+      T("Write script to extract text from PDF"),
+      T("Print first 500 characters to verify it works"),
+      T("Learn about text chunking (why it’s needed)"),
+    ]},
+    { day:18, phaseId:"p2", title:"Loaders + chunking", tasks:[
+      T("Use LangChain's PyPDFLoader"),
+      T("Split document into chunks (~500 chars each)"),
+      T("Print number of chunks created"),
+      T("Test with multiple PDFs (2–3 documents)"),
+    ]},
+    { day:19, phaseId:"p2", title:"Embeddings intro + ChromaDB", tasks:[
+      T("Install: pip install chromadb"),
+      T("Learn what embeddings are (vectors representing meaning)"),
+      T("Watch: 'Vector Embeddings Explained' by IBM Technology"),
+      T("Read ChromaDB docs: docs.trychroma.com"),
+    ]},
+    { day:20, phaseId:"p2", title:"Store embeddings", tasks:[
+      T("Create your first ChromaDB collection"),
+      T("Convert text chunks to embeddings"),
+      T("Store embeddings in database"),
+      T("Verify storage (check collection count)"),
+    ]},
+    { day:21, phaseId:"p2", title:"Similarity search concepts", tasks:[
+      T("Learn similarity search (finding relevant chunks)"),
+      T("Sketch: what should retrieval return (top-k chunks + metadata)?"),
+    ]},
+    { day:22, phaseId:"p2", title:"Query embeddings", tasks:[
+      T("Query database: 'What is the voting age in Haiti?'"),
+      T("Return top 3 most relevant chunks"),
+      T("Practice with different questions (5+)"),
+    ]},
+    { day:23, phaseId:"p2", title:"Design retrieval pipeline", tasks:[
+      T("Design pipeline: Question → Search DB → Get chunks"),
+      T("Write retrieval function"),
+      T("Test: input question → output relevant chunks"),
+    ]},
+    { day:24, phaseId:"p2", title:"Connect retrieval to LLM", tasks:[
+      T("Connect retrieval to AI: Chunks + Question → AI → Answer"),
+      T("Write system prompt: 'Answer only from this context…'"),
+      T("Test end-to-end flow"),
+    ]},
+    { day:25, phaseId:"p2", title:"Add citations", tasks:[
+      T("Add source citations (which page number / chunk id)"),
+      T("Display citations with the answer (simple list)"),
+    ]},
+    { day:26, phaseId:"p2", title:"Handle 'I don't know'", tasks:[
+      T("Handle 'I don't know' when no relevant chunks found"),
+      T("Set a similarity threshold and test boundary cases"),
+    ]},
+    { day:27, phaseId:"p2", title:"Optimize chunking + robustness", tasks:[
+      T("Optimize chunk size for better answers"),
+      T("Test with complex multi-part questions (3+)"),
+      T("Add basic input validation + error handling"),
+    ]},
+    { day:28, phaseId:"p2", title:"Project #2 polish", tasks:[
+      T("Polish the Q&A interface"),
+      T("Add conversation memory (remember previous questions)"),
+      T("Test with real Haitian policy documents"),
+    ]},
+    { day:29, phaseId:"p2", title:"Multi-document support", tasks:[
+      T("Add multi-document support (query across 3+ PDFs)"),
+      T("Improve error handling"),
+      T("Create demo using Haiti's Labor Code or Constitution"),
+    ]},
+    { day:30, phaseId:"p2", title:"Project #2 finish", tasks:[
+      T("Final testing and refinement"),
+      T("Record demo video (ask 5 questions, show answers)"),
+      T("Write documentation"),
+      T("MILESTONE: Project #2 (PDF Q&A bot) complete","Checkpoint",true),
+    ]},
+
+    { day:31, phaseId:"p3", title:"Flask basics", tasks:[
+      T("Install: pip install flask"),
+      T("Learn what web servers do"),
+      T("Watch: 'Flask Tutorial' by Tech With Tim"),
+      T("Create app that shows 'Hello World' in browser"),
+    ]},
+    { day:32, phaseId:"p3", title:"Routes + POST endpoint", tasks:[
+      T("Learn about routes (@app.route)"),
+      T("Create /translate route that accepts POST requests"),
+      T("Test with Postman or curl"),
+      T("Return JSON responses"),
+    ]},
+    { day:33, phaseId:"p3", title:"Webhooks 1/2", tasks:[
+      T("Learn about webhooks (how apps talk to each other)"),
+      T("Create /webhook route"),
+      T("Parse incoming JSON data"),
+    ]},
+    { day:34, phaseId:"p3", title:"Webhooks 2/2", tasks:[
+      T("Test webhook with mock data"),
+      T("Log requests cleanly (timestamps + sender id)"),
+      T("Refactor webhook handler into functions"),
+    ]},
+    { day:35, phaseId:"p3", title:"Twilio WhatsApp sandbox", tasks:[
+      T("Sign up for Twilio (twilio.com/try-twilio)"),
+      T("Get trial credit (if available)"),
+      T("Join Twilio WhatsApp Sandbox"),
+      T("Send test message from your phone to Twilio number"),
+      T("Read Twilio WhatsApp docs"),
+    ]},
+    { day:36, phaseId:"p3", title:"Twilio + ngrok", tasks:[
+      T("Install: pip install twilio"),
+      T("Connect Flask webhook to Twilio"),
+      T("Use ngrok to expose local server (ngrok.com)"),
+      T("Receive message in your Flask app"),
+    ]},
+    { day:37, phaseId:"p3", title:"Reply loop + translator logic", tasks:[
+      T("Send reply back to WhatsApp from your bot"),
+      T("Test: message bot → get automatic reply"),
+      T("Add your translator logic"),
+      T("Test: send English → receive Creole"),
+      T("MILESTONE: WhatsApp bot sends first message","Checkpoint",true),
+    ]},
+    { day:38, phaseId:"p3", title:"Speech-to-text basics", tasks:[
+      T("Learn about audio formats (.ogg, .mp3, .wav)"),
+      T("Read Whisper API docs (speech-to-text)"),
+      T("Download sample audio file"),
+      T("Test Whisper API with sample file"),
+    ]},
+    { day:39, phaseId:"p3", title:"Receive voice note", tasks:[
+      T("Receive voice note from WhatsApp"),
+      T("Download audio file from Twilio URL"),
+      T("Save to temporary location"),
+      T("Test file download logic"),
+    ]},
+    { day:40, phaseId:"p3", title:"Transcribe voice 1/2", tasks:[
+      T("Send audio to Whisper API"),
+      T("Get transcribed text back"),
+      T("Test end-to-end: Voice → Text → Print"),
+    ]},
+    { day:41, phaseId:"p3", title:"Transcribe voice 2/2 (multilingual)", tasks:[
+      T("Handle Creole/French/English audio"),
+      T("Add error handling for bad audio / timeouts"),
+      T("Log transcripts with sender id (for debugging)"),
+    ]},
+    { day:42, phaseId:"p3", title:"Text-to-speech basics", tasks:[
+      T("Learn Text-to-Speech (OpenAI TTS API)"),
+      T("Generate audio response from text"),
+      T("Test different voices and speeds"),
+    ]},
+    { day:43, phaseId:"p3", title:"Full voice loop", tasks:[
+      T("Send audio reply back via WhatsApp"),
+      T("Complete loop: Voice In → Transcribe → AI → TTS → Voice Out"),
+      T("Test with real Creole voice notes"),
+    ]},
+    { day:44, phaseId:"p3", title:"Polish + fallback", tasks:[
+      T("Add fallback to text if audio fails"),
+      T("Polish user experience (clear confirmations, shorter responses)"),
+      T("Stress test: 10 messages + 5 voice notes"),
+    ]},
+    { day:45, phaseId:"p3", title:"Project #3 finish", tasks:[
+      T("Record impressive demo video"),
+      T("Document setup steps (README + env vars)"),
+      T("MILESTONE: Project #3 (Voice bot) fully functional","Checkpoint",true),
+    ]},
+
+    { day:46, phaseId:"p4", title:"GitHub basics", tasks:[
+      T("Create GitHub account (github.com)"),
+      T("Learn Git basics (commit, push, pull)"),
+      T("Watch: 'Git and GitHub for Beginners' by freeCodeCamp"),
+      T("Push your first project to GitHub"),
+    ]},
+    { day:47, phaseId:"p4", title:"Deploy Hello World", tasks:[
+      T("Sign up for Render (render.com) or Railway/fly.io"),
+      T("Learn environment variables in production"),
+      T("Deploy a simple Flask 'Hello World' app"),
+    ]},
+    { day:48, phaseId:"p4", title:"Deploy WhatsApp bot 1/2", tasks:[
+      T("Deploy your WhatsApp bot to Render"),
+      T("Set environment variables (API keys, secrets)"),
+      T("Verify webhook endpoint responds 200 OK"),
+    ]},
+    { day:49, phaseId:"p4", title:"Deploy WhatsApp bot 2/2", tasks:[
+      T("Update Twilio webhook to production URL"),
+      T("Test: bot works 24/7 without your laptop"),
+      T("Monitor logs for errors"),
+      T("MILESTONE: Bot deployed and running 24/7","Checkpoint",true),
+    ]},
+    { day:50, phaseId:"p4", title:"Try to break it", tasks:[
+      T("Try to break your bot (send weird inputs)"),
+      T("Add try/except blocks everywhere"),
+      T("Handle: API down, file too large, invalid audio"),
+    ]},
+    { day:51, phaseId:"p4", title:"User-friendly failures", tasks:[
+      T("Add user-friendly error messages"),
+      T("Test with slow internet connections (throttle or simulate delays)"),
+      T("Add logging for debugging (structured logs)"),
+    ]},
+    { day:52, phaseId:"p4", title:"Final QA with real users", tasks:[
+      T("Final polish and testing"),
+      T("Ask 3 friends to test your bot"),
+      T("Fix any bugs they find"),
+    ]},
+    { day:53, phaseId:"p4", title:"Create your sales asset", tasks:[
+      T("Record a 60-second demo video"),
+      T("Show yourself speaking Creole to your bot"),
+      T("Show bot replying in audio"),
+      T("Upload to YouTube (unlisted) or Loom"),
+      T("MILESTONE: Demo video recorded and published","Checkpoint",true),
+    ]},
+    { day:54, phaseId:"p4", title:"Sales sprint: build your list (1/2)", tasks:[
+      T("Identify 20 potential clients (restaurants, salons, tutors, etc.)"),
+      T("Add at least 10 diaspora-focused targets (lawyers, real estate, remittance-related)"),
+      T("Collect contact channels (WhatsApp, IG, FB, email)"),
+    ]},
+    { day:55, phaseId:"p4", title:"Sales sprint: build your list (2/2)", tasks:[
+      T("Segment your list by category (restaurant/salon/real estate/etc.)"),
+      T("Write 2 short pitch templates + 2 follow-up templates"),
+      T("Prepare your link to the 60-second demo"),
+    ]},
+    { day:56, phaseId:"p4", title:"Outreach day 1", tasks:[
+      T("Send 4 personalized messages (WhatsApp/IG/FB DMs)"),
+      T("Log who you messaged + when (simple spreadsheet)"),
+      T("Offer first month free to first 3 clients (if you choose)"),
+    ]},
+    { day:57, phaseId:"p4", title:"Outreach day 2", tasks:[
+      T("Send 4 personalized messages"),
+      T("Refine your pitch based on replies (one improvement)"),
+      T("Reply fast to any responses (same day)"),
+    ]},
+    { day:58, phaseId:"p4", title:"Outreach day 3 + follow-ups", tasks:[
+      T("Send 4 personalized messages"),
+      T("Follow up after ~2 days where appropriate (short + friendly)"),
+      T("Ask for a 10-minute demo call"),
+    ]},
+    { day:59, phaseId:"p4", title:"Outreach day 4 + tighten offer", tasks:[
+      T("Send 4 personalized messages"),
+      T("Create a simple price sheet (basic / voice+docs / setup fee)"),
+      T("Pick 1 niche to focus on for first client (e.g., salons or restaurants)"),
+    ]},
+    { day:60, phaseId:"p4", title:"Outreach day 5 + book calls", tasks:[
+      T("Send 4 personalized messages"),
+      T("Aim to book 3 demo calls (calendar links or DM scheduling)"),
+      T("MILESTONE: First client demo call booked","Checkpoint",true),
+    ]},
+  ];
+
+  // =========================
+  // Local state
+  // =========================
+  const LS_KEY = "ai60_progress_v2";
+  const LS_GH  = "ai60_github_v1";
+  const GH_FILE_PATH = "progress.json";
+
+  let state = loadState();
+  let gh = loadGithubConfig();
+
+  function loadState(){
+    try{
+      const raw = localStorage.getItem(LS_KEY);
+      if(!raw) return { checked: {} };
+      const parsed = JSON.parse(raw);
+      if(!parsed || typeof parsed !== "object") return { checked: {} };
+      if(!parsed.checked || typeof parsed.checked !== "object") parsed.checked = {};
+      return parsed;
+    }catch(e){ return { checked: {} }; }
+  }
+  function saveState(){
+    localStorage.setItem(LS_KEY, JSON.stringify(state));
+  }
+
+  function loadGithubConfig(){
+    try{
+      const raw = localStorage.getItem(LS_GH);
+      if(!raw) return { user:"", repo:"", token:"", connected:false, lastSha:null, lastSyncAt:null };
+      const parsed = JSON.parse(raw);
+      return {
+        user: parsed.user || "",
+        repo: parsed.repo || "",
+        token: parsed.token || "",
+        connected: !!parsed.connected,
+        lastSha: parsed.lastSha || null,
+        lastSyncAt: parsed.lastSyncAt || null
+      };
+    }catch(e){
+      return { user:"", repo:"", token:"", connected:false, lastSha:null, lastSyncAt:null };
+    }
+  }
+  function saveGithubConfig(){
+    localStorage.setItem(LS_GH, JSON.stringify(gh));
+  }
+
+  // =========================
+  // DOM
+  // =========================
+  const grid = document.getElementById("grid");
+  const phaseList = document.getElementById("phaseList");
+  const searchInput = document.getElementById("searchInput");
+
+  const ghTag = document.getElementById("ghTag");
+  const ghRepoTag = document.getElementById("ghRepoTag");
+  const ghFileTag = document.getElementById("ghFileTag");
+
+  const toastEl = document.getElementById("toast");
+  let toastTimer = null;
+  function toast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove("show"), 1200);
+  }
+
+  function escapeHtml(str){
+    return String(str)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  // =========================
+  // Progress helpers
+  // =========================
+  function taskId(dayNumber, taskIndex){ return `d${dayNumber}_t${taskIndex}`; }
+
+  function totalTasks(){ return days.reduce((sum, d) => sum + d.tasks.length, 0); }
+
+  function doneTasks(){
+    let c = 0;
+    for(const d of days){
+      d.tasks.forEach((_, i) => { if(state.checked[taskId(d.day, i)]) c++; });
+    }
+    return c;
+  }
+
+  function phaseTotals(phaseId){
+    const ds = days.filter(d => d.phaseId === phaseId);
+    const total = ds.reduce((s, d) => s + d.tasks.length, 0);
+    const done = ds.reduce((s, d) => {
+      let dd = 0;
+      d.tasks.forEach((_, i) => { if(state.checked[taskId(d.day, i)]) dd++; });
+      return s + dd;
+    }, 0);
+    return { total, done };
+  }
+
+  function dayTotals(dayNumber){
+    const d = days.find(x => x.day === dayNumber);
+    const total = d.tasks.length;
+    let done = 0;
+    d.tasks.forEach((_, i) => { if(state.checked[taskId(dayNumber, i)]) done++; });
+    return { total, done };
+  }
+
+  function pct(done, total){ return !total ? 0 : Math.round((done / total) * 100); }
+
+  // =========================
+  // Rendering
+  // =========================
+  function renderSidebar(){
+    const total = totalTasks();
+    const done = doneTasks();
+    const p = pct(done, total);
+
+    document.getElementById("overallDone").textContent = done;
+    document.getElementById("overallTotal").textContent = total;
+    document.getElementById("overallPct").textContent = p;
+    document.getElementById("overallBar").style.width = `${p}%`;
+
+    phaseList.innerHTML = "";
+    for(const ph of phases){
+      const {total: t, done: d} = phaseTotals(ph.id);
+      const pph = pct(d, t);
+      const el = document.createElement("div");
+      el.className = "phaseItem";
+      el.innerHTML = `
+        <div class="phaseTop">
+          <div class="phaseName">${escapeHtml(ph.name)}</div>
+          <div class="phaseDays">Days ${ph.days[0]}–${ph.days[1]}</div>
+        </div>
+        <div class="progress" aria-label="${escapeHtml(ph.name)} progress">
+          <div class="bar" style="width:${pph}%; background: linear-gradient(90deg, rgba(167,139,250,.95), rgba(110,231,255,.95))"></div>
+        </div>
+        <div class="phaseMeta">
+          <div>${d}/${t} tasks</div>
+          <div>${pph}%</div>
+        </div>
+      `;
+      phaseList.appendChild(el);
+    }
+
+    renderGithubStatus();
+  }
+
+  function renderGithubStatus(){
+    ghFileTag.textContent = GH_FILE_PATH;
+
+    if(gh.connected && gh.user && gh.repo && gh.token){
+      ghTag.textContent = "Connected";
+      ghTag.className = "tag ok";
+      ghRepoTag.textContent = `${gh.user}/${gh.repo}`;
+      ghRepoTag.className = "tag";
+    }else{
+      ghTag.textContent = "Not connected";
+      ghTag.className = "tag bad";
+      ghRepoTag.textContent = "—";
+      ghRepoTag.className = "tag";
+    }
+  }
+
+  function renderMain(filter = ""){
+    const q = filter.trim().toLowerCase();
+    grid.innerHTML = "";
+
+    for(const ph of phases){
+      const header = document.createElement("div");
+      header.className = "phaseHeader";
+      const {total: t, done: d} = phaseTotals(ph.id);
+      const pph = pct(d, t);
+
+      header.innerHTML = `
+        <div class="left">
+          <h3>${escapeHtml(ph.name)} • <span style="color:var(--muted); font-weight:650; font-size:12px; font-family:var(--mono)">Days ${ph.days[0]}–${ph.days[1]}</span></h3>
+          <div class="sub"><strong>Goal:</strong> ${escapeHtml(ph.goal)}<br/>${escapeHtml(ph.description)}</div>
+        </div>
+        <div class="right">
+          <div class="pct">${d}/${t} tasks • ${pph}%</div>
+          <div class="progress"><div class="bar" style="width:${pph}%;"></div></div>
+        </div>
+      `;
+      grid.appendChild(header);
+
+      const phaseDays = days.filter(dy => dy.phaseId === ph.id);
+
+      for(const dday of phaseDays){
+        if(q){
+          const hay = [
+            `day ${dday.day}`,
+            dday.title,
+            ...dday.tasks.map(t => t.label),
+            ...dday.tasks.map(t => t.note || "")
+          ].join(" ").toLowerCase();
+          if(!hay.includes(q)) continue;
+        }
+
+        const card = document.createElement("div");
+        card.className = "dayCard";
+        const dt = dayTotals(dday.day);
+        const dp = pct(dt.done, dt.total);
+
+        const tasksHtml = dday.tasks.map((tk, i) => {
+          const id = taskId(dday.day, i);
+          const checked = !!state.checked[id];
+          const cls = ["task", checked ? "done" : "", tk.milestone ? "milestone" : ""].join(" ").trim();
+          const note = tk.note ? `<div class="note">${escapeHtml(tk.note)}</div>` : "";
+          const milestoneTag = tk.milestone ? `<span style="color:var(--warn); font-family:var(--mono); font-size:12px">• MILESTONE</span>` : "";
+
+          return `
+            <label class="${cls}" data-taskid="${id}">
+              <input type="checkbox" ${checked ? "checked" : ""} aria-label="Task checkbox" />
+              <div class="taskText">
+                <div class="label">${escapeHtml(tk.label)} ${milestoneTag}</div>
+                ${note}
+              </div>
+            </label>
+          `;
+        }).join("");
+
+        card.innerHTML = `
+          <div class="dayTop">
+            <div class="dayTitle">
+              <div class="d">DAY ${dday.day}</div>
+              <div class="t">${escapeHtml(dday.title)}</div>
+            </div>
+            <div class="dayMeta">
+              <div class="pill"><strong>${dt.done}</strong> / ${dt.total} done</div>
+              <div class="miniProgress" aria-label="Day ${dday.day} progress">
+                <div class="miniBar" style="width:${dp}%;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="tasks">${tasksHtml}</div>
+        `;
+        grid.appendChild(card);
+      }
+    }
+
+    // Bind checkbox events
+    grid.querySelectorAll(".task input[type='checkbox']").forEach(cb => {
+      cb.addEventListener("change", async (e) => {
+        const label = e.target.closest(".task");
+        const id = label.getAttribute("data-taskid");
+
+        if(e.target.checked) state.checked[id] = true;
+        else delete state.checked[id];
+
+        saveState();
+        label.classList.toggle("done", e.target.checked);
+
+        renderSidebar();
+        updateDayCardUIFromLabel(label);
+        refreshPhaseHeaders();
+        toast(e.target.checked ? "Saved ✓" : "Unchecked (saved)");
+
+        // Auto sync (debounced)
+        scheduleAutoSync();
+      });
+    });
+  }
+
+  function updateDayCardUIFromLabel(labelEl){
+    const taskIdStr = labelEl.getAttribute("data-taskid");
+    const match = /^d(\d+)_t/.exec(taskIdStr);
+    if(!match) return;
+    const dayNumber = parseInt(match[1], 10);
+    const card = labelEl.closest(".dayCard");
+    if(!card) return;
+
+    const {total, done} = dayTotals(dayNumber);
+    const dp = pct(done, total);
+
+    const pill = card.querySelector(".pill");
+    if(pill) pill.innerHTML = `<strong>${done}</strong> / ${total} done`;
+
+    const miniBar = card.querySelector(".miniBar");
+    if(miniBar) miniBar.style.width = `${dp}%`;
+  }
+
+  function refreshPhaseHeaders(){
+    const headers = grid.querySelectorAll(".phaseHeader");
+    headers.forEach((headerEl) => {
+      const title = headerEl.querySelector("h3")?.textContent || "";
+      const ph = phases.find(p => title.includes(p.name));
+      if(!ph) return;
+      const {total, done} = phaseTotals(ph.id);
+      const pph = pct(done, total);
+      const pctEl = headerEl.querySelector(".pct");
+      if(pctEl) pctEl.textContent = `${done}/${total} tasks • ${pph}%`;
+      const bar = headerEl.querySelector(".bar");
+      if(bar) bar.style.width = `${pph}%`;
+    });
+  }
+
+  // =========================
+  // GitHub Sync
+  // =========================
+  function ghHeaders(){
+    return {
+      "Accept": "application/vnd.github+json",
+      "Authorization": `token ${gh.token}`,
+      "X-GitHub-Api-Version": "2022-11-28"
+    };
+  }
+
+  async function ghTestConnection(){
+    const url = `https://api.github.com/repos/${encodeURIComponent(gh.user)}/${encodeURIComponent(gh.repo)}`;
+    const res = await fetch(url, { headers: ghHeaders() });
+    if(!res.ok){
+      const txt = await safeText(res);
+      throw new Error(`GitHub test failed (${res.status}): ${txt || res.statusText}`);
+    }
+    return await res.json();
+  }
+
+  async function ghGetFileSha(path){
+    const url = `https://api.github.com/repos/${encodeURIComponent(gh.user)}/${encodeURIComponent(gh.repo)}/contents/${encodeURIComponent(path)}`;
+    const res = await fetch(url, { headers: ghHeaders() });
+    if(res.status === 404) return null;
+    if(!res.ok){
+      const txt = await safeText(res);
+      throw new Error(`Get file failed (${res.status}): ${txt || res.statusText}`);
+    }
+    const data = await res.json();
+    return data && data.sha ? data.sha : null;
+  }
+
+  function toBase64Utf8(str){
+    // Proper UTF-8 base64 in browser
+    return btoa(unescape(encodeURIComponent(str)));
+  }
+
+  async function ghPutFile(path, contentStr, shaMaybe){
+    const url = `https://api.github.com/repos/${encodeURIComponent(gh.user)}/${encodeURIComponent(gh.repo)}/contents/${encodeURIComponent(path)}`;
+    const body = {
+      message: `Update ${path} (progress sync)`,
+      content: toBase64Utf8(contentStr)
+    };
+    if(shaMaybe) body.sha = shaMaybe;
+
+    const res = await fetch(url, {
+      method: "PUT",
+      headers: { ...ghHeaders(), "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+
+    if(!res.ok){
+      const txt = await safeText(res);
+      throw new Error(`Write failed (${res.status}): ${txt || res.statusText}`);
+    }
+    return await res.json();
+  }
+
+  async function syncToGithub(){
+    if(!(gh.connected && gh.user && gh.repo && gh.token)){
+      toast("GitHub not connected.");
+      openSetupModal();
+      return;
+    }
+
+    const payload = {
+      version: 1,
+      updatedAt: new Date().toISOString(),
+      progress: state
+    };
+
+    try{
+      ghTag.textContent = "Syncing…";
+      ghTag.className = "tag";
+      const sha = await ghGetFileSha(GH_FILE_PATH);
+      const result = await ghPutFile(GH_FILE_PATH, JSON.stringify(payload, null, 2), sha);
+      gh.lastSha = result?.content?.sha || gh.lastSha;
+      gh.lastSyncAt = new Date().toISOString();
+      gh.connected = true;
+      saveGithubConfig();
+      renderGithubStatus();
+      toast("Synced to GitHub ✓");
+    }catch(err){
+      gh.connected = false;
+      saveGithubConfig();
+      renderGithubStatus();
+      toast("Sync failed. Open setup.");
+      console.error(err);
+      openSetupModal(`Sync error: ${err.message}`);
+    }
+  }
+
+  async function safeText(res){
+    try{ return await res.text(); }catch(e){ return ""; }
+  }
+
+  // Debounced auto-sync to avoid hammering API
+  let syncTimer = null;
+  function scheduleAutoSync(){
+    if(!(gh.connected && gh.user && gh.repo && gh.token)) return;
+    clearTimeout(syncTimer);
+    syncTimer = setTimeout(() => { syncToGithub(); }, 1200);
+  }
+
+  // =========================
+  // Modal setup
+  // =========================
+  const modalBack = document.getElementById("modalBack");
+  const setupStatus = document.getElementById("setupStatus");
+  const ghUserInput = document.getElementById("ghUser");
+  const ghRepoInput = document.getElementById("ghRepo");
+  const ghTokenInput = document.getElementById("ghToken");
+
+  function openSetupModal(message){
+    if(message) setupStatus.textContent = message;
+    else setupStatus.textContent = "Fill your details then click “Connect & Test”.";
+    modalBack.classList.add("show");
+    modalBack.setAttribute("aria-hidden","false");
+
+    ghUserInput.value = gh.user || "";
+    ghRepoInput.value = gh.repo || "";
+    ghTokenInput.value = gh.token || "";
+    ghUserInput.focus();
+  }
+
+  function closeSetupModal(){
+    modalBack.classList.remove("show");
+    modalBack.setAttribute("aria-hidden","true");
+  }
+
+  document.getElementById("openSetup").addEventListener("click", () => openSetupModal());
+  document.getElementById("closeSetup").addEventListener("click", closeSetupModal);
+  modalBack.addEventListener("click", (e) => { if(e.target === modalBack) closeSetupModal(); });
+
+  document.getElementById("connectTest").addEventListener("click", async () => {
+    const user = ghUserInput.value.trim();
+    const repo = ghRepoInput.value.trim();
+    const token = ghTokenInput.value.trim();
+
+    if(!user || !repo || !token){
+      setupStatus.textContent = "Please fill Username, Repo, and Token.";
+      return;
+    }
+
+    gh.user = user; gh.repo = repo; gh.token = token;
+
+    setupStatus.textContent = "Testing connection…";
+    try{
+      await ghTestConnection();
+      gh.connected = true;
+      saveGithubConfig();
+      renderGithubStatus();
+      setupStatus.textContent = "Connected ✓ Now syncing your current progress…";
+      await syncToGithub();
+      setupStatus.textContent = "All set ✓ You can close this window.";
+      toast("GitHub connected ✓");
+    }catch(err){
+      gh.connected = false;
+      saveGithubConfig();
+      renderGithubStatus();
+      setupStatus.textContent = `Connection failed: ${err.message}`;
+      toast("GitHub connection failed.");
+      console.error(err);
+    }
+  });
+
+  document.getElementById("disconnect").addEventListener("click", () => {
+    gh = { user:"", repo:"", token:"", connected:false, lastSha:null, lastSyncAt:null };
+    saveGithubConfig();
+    renderGithubStatus();
+    setupStatus.textContent = "Disconnected. (Local progress is still saved.)";
+    toast("Disconnected.");
+  });
+
+  // =========================
+  // Controls
+  // =========================
+  document.getElementById("resetAll").addEventListener("click", () => {
+    const ok = confirm("Reset ALL progress? This cannot be undone.");
+    if(!ok) return;
+    state = { checked: {} };
+    saveState();
+    renderSidebar();
+    renderMain(searchInput.value);
+    toast("Progress reset.");
+    scheduleAutoSync();
+  });
+
+  document.getElementById("markVisibleDone").addEventListener("click", () => {
+    const visibleTasks = [...grid.querySelectorAll(".task")].filter(el => el.offsetParent !== null);
+    let changed = 0;
+    visibleTasks.forEach((labelEl) => {
+      const id = labelEl.getAttribute("data-taskid");
+      const cb = labelEl.querySelector("input[type='checkbox']");
+      if(cb && !cb.checked){
+        cb.checked = true;
+        state.checked[id] = true;
+        labelEl.classList.add("done");
+        changed++;
+      }
+    });
+    if(changed){
+      saveState();
+      renderSidebar();
+      visibleTasks.forEach(updateDayCardUIFromLabel);
+      refreshPhaseHeaders();
+      toast(`Marked ${changed} tasks done.`);
+      scheduleAutoSync();
+    }else{
+      toast("No visible tasks to mark.");
+    }
+  });
+
+  document.getElementById("syncNow").addEventListener("click", syncToGithub);
+
+  searchInput.addEventListener("input", () => {
+    renderMain(searchInput.value);
+    toast(searchInput.value.trim() ? "Filtered" : "Showing all");
+  });
+
+  // =========================
+  // First-run: show setup popup
+  // =========================
+  function shouldShowSetup(){
+    return !(gh.connected && gh.user && gh.repo && gh.token);
+  }
+
+  renderSidebar();
+  renderMain("");
+
+  if(shouldShowSetup()){
+    // show after initial paint
+    setTimeout(() => openSetupModal("Setup required: connect your GitHub to save progress into the repo."), 350);
+  } else {
+    // Try a gentle background test; if it fails, prompt setup.
+    (async () => {
+      try{
+        await ghTestConnection();
+        gh.connected = true;
+        saveGithubConfig();
+        renderGithubStatus();
+      }catch(e){
+        gh.connected = false;
+        saveGithubConfig();
+        renderGithubStatus();
+        openSetupModal("Your GitHub token seems invalid/expired. Please reconnect.");
+      }
+    })();
+  }
+</script>
+</body>
+</html>
