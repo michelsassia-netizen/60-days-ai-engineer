@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-02-26T21:36:58.301Z",
+  "updatedAt": "2026-02-26T21:37:04.047Z",
   "progress": {
     "checked": {
       "d1_t0": true,
@@ -12,7 +12,15 @@
       "d2_t0": true,
       "d2_t1": true,
       "d2_t2": true,
-      "d2_t3": true
+      "d2_t3": true,
+      "d3_t0": true,
+      "d3_t1": true,
+      "d3_t2": true,
+      "d3_t3": true,
+      "d4_t0": true,
+      "d4_t1": true,
+      "d4_t2": true,
+      "d4_t3": true
     }
   }
 }
