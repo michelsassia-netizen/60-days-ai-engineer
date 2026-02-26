@@ -1,36 +1,7 @@
 {
   "version": 1,
-  "updatedAt": "2026-02-24T20:32:56.240Z",
+  "updatedAt": "2026-02-26T21:36:45.606Z",
   "progress": {
-    "checked": {
-      "d1_t0": true,
-      "d1_t1": true,
-      "d1_t2": true,
-      "d1_t3": true,
-      "d1_t4": true,
-      "d1_t5": true,
-      "d2_t0": true,
-      "d2_t1": true,
-      "d2_t2": true,
-      "d2_t3": true,
-      "d3_t0": true,
-      "d3_t1": true,
-      "d3_t2": true,
-      "d3_t3": true,
-      "d4_t0": true,
-      "d4_t1": true,
-      "d4_t2": true,
-      "d4_t3": true,
-      "d5_t0": true,
-      "d5_t1": true,
-      "d5_t2": true,
-      "d5_t3": true,
-      "d6_t0": true,
-      "d6_t1": true,
-      "d6_t2": true,
-      "d7_t0": true,
-      "d7_t1": true,
-      "d7_t2": true
-    }
+    "checked": {}
   }
 }
